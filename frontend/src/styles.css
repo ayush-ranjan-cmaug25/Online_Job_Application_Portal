@@ -1,0 +1,139 @@
+:root{
+  --glass-bg: rgba(255,255,255,0.18);
+  --glass-border: rgba(255,255,255,0.25);
+  --accent: rgba(64, 120, 255, 0.9);
+  --text:#0b1226;
+}
+
+*{box-sizing:border-box;font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background: linear-gradient(135deg, #cfe8ff 0%, #e7f1ff 50%, #ffffff 100%);
+  -webkit-font-smoothing:antialiased;
+  color:var(--text);
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 76px; /* Space for fixed navbar */
+}
+
+/* Animated gradient hero */
+.hero-bg{
+  background: linear-gradient(120deg, rgba(173,196,255,0.22), rgba(200,220,255,0.18));
+  position: relative;
+  overflow: hidden;
+  margin-top: -76px; /* Counteract body padding for hero */
+  padding-top: 76px; /* Add back padding inside hero */
+}
+.hero-anim {
+  position:absolute;
+  inset: -30% -30% auto -30%;
+  height:160%;
+  background: radial-gradient(circle at 20% 10%, rgba(120,170,255,0.35), transparent 12%),
+              radial-gradient(circle at 80% 90%, rgba(180,210,255,0.25), transparent 12%);
+  filter: blur(40px);
+  animation: drift 18s linear infinite;
+  opacity:0.9;
+}
+@keyframes drift{
+  0%{transform: translateY(0) rotate(0deg);}
+  50%{transform: translateY(-6%) rotate(5deg);}
+  100%{transform: translateY(0) rotate(0deg);}
+}
+
+/* Glass card */
+.glass {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid var(--glass-border);
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(15,23,42,0.08);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+/* navbar */
+.navbar-glass{
+  background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.12));
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 24px rgba(15,23,42,0.06);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+
+/* buttons */
+.btn-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.12));
+  border: 1px solid rgba(255,255,255,0.35);
+  color: var(--text);
+  border-radius: 12px;
+  padding: .5rem 1rem;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-glass:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(64,120,255,0.08); }
+
+.container-smash { max-width:1100px; margin:0 auto; padding:0 2rem; }
+
+.hero-content{
+  padding:4rem 1.25rem;
+  position:relative;
+  z-index:2;
+}
+
+/* job card hover tilt */
+.job-card{ cursor:pointer; transition: transform .18s ease, box-shadow .18s ease; transform-origin:center; }
+.job-card:hover{ transform: translateY(-8px) scale(1.01); box-shadow: 0 18px 40px rgba(11,18,38,0.08); }
+
+.job-card-inner{
+  padding:1.25rem;
+  border-radius:14px;
+}
+
+/* subtle fade-in on scroll */
+.fade-in{ opacity:0; transform: translateY(8px); transition: opacity .6s ease, transform .6s ease; }
+.fade-in.show{ opacity:1; transform: translateY(0); }
+
+/* forms */
+.form-glass{ padding:1rem; border-radius:12px; border:1px solid rgba(255,255,255,0.14); }
+
+/* Footer */
+.footer-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.12));
+  border-top: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(10px);
+  margin-top: 5rem !important;
+}
+
+footer{ padding:2rem 0; text-align:center; color:rgba(11,18,38,0.6); }
+
+/* Page Titles - Consistent spacing */
+.page-title {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Consistent section spacing */
+.my-5 {
+  margin-top: 3rem !important;
+  margin-bottom: 3rem !important;
+}
+
+/* responsive tweaks */
+@media (max-width:767px){
+  body {
+    padding-top: 56px; /* Smaller navbar on mobile */
+  }
+  
+  .hero-bg {
+    margin-top: -56px;
+    padding-top: 56px;
+  }
+  
+  .hero-content{ padding:2rem 1rem; }
+  .container-smash{ padding:0 1rem; }
+}
