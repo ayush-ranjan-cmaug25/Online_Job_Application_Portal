@@ -7,6 +7,7 @@ function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -78,16 +79,39 @@ function Login() {
 
               <div className="mb-4">
                 <label className="form-label fw-bold">Password *</label>
-                <input
-                  type="password"
-                  name="password"
-                  className="form-control form-glass"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  minLength="6"
-                  placeholder="Enter your password"
-                />
+                <div className="position-relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    className="form-control form-glass"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    minLength="6"
+                    placeholder="Enter your password"
+                    style={{ paddingRight: '45px' }}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm position-absolute"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'transparent',
+                      color: '#6c757d',
+                      fontSize: '1.2rem',
+                      padding: '0',
+                      width: '30px',
+                      height: '30px'
+                    }}
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? '👁️' : '👁️‍🗨️'}
+                  </button>
+                </div>
               </div>
 
               <button

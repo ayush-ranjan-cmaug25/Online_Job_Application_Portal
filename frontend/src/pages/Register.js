@@ -14,6 +14,8 @@ function Register() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -154,29 +156,75 @@ function Register() {
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label fw-bold">Password *</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="form-control form-glass"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    minLength="6"
-                    placeholder="Minimum 6 characters"
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      className="form-control form-glass"
+                      value={formData.password}
+                      onChange={handleChange}
+                      required
+                      minLength="6"
+                      placeholder="Minimum 6 characters"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm position-absolute"
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#6c757d',
+                        fontSize: '1.2rem',
+                        padding: '0',
+                        width: '30px',
+                        height: '30px'
+                      }}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="col-md-6 mb-3">
                   <label className="form-label fw-bold">Confirm Password *</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    className="form-control form-glass"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    required
-                    placeholder="Re-enter password"
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      className="form-control form-glass"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      placeholder="Re-enter password"
+                      style={{ paddingRight: '45px' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-sm position-absolute"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        border: 'none',
+                        background: 'transparent',
+                        color: '#6c757d',
+                        fontSize: '1.2rem',
+                        padding: '0',
+                        width: '30px',
+                        height: '30px'
+                      }}
+                      title={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
