@@ -10,165 +10,162 @@ async function seed() {
   try {
     // Disable foreign key checks temporarily
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    
+
     // Clear all data from tables but keep the structure
     await User.destroy({ where: {}, truncate: true });
     await Job.destroy({ where: {}, truncate: true });
     await Application.destroy({ where: {}, truncate: true });
     await SavedJob.destroy({ where: {}, truncate: true });
-    
+
     console.log("🗑️  All users and related data cleared");
-    
+
     // Re-enable foreign key checks
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-
-    // Create users with password "123456"
-    const hashedPassword = await bcrypt.hash("123456", 10);
 
     // Create Admin Users
     const ayush = await User.create({
       name: "Ayush Ranjan",
       email: "ayush@admin.com",
-      password: hashedPassword,
+      password: "123456",
       role: "admin",
       phone: "+91 98765 43210",
       bio: "System administrator with expertise in managing job portals",
-      isActive: true
+      isActive: true,
     });
 
     const deepra = await User.create({
       name: "Deepra Banerjee",
       email: "deepra@admin.com",
-      password: hashedPassword,
+      password: "123456",
       role: "admin",
       phone: "+91 98765 43211",
       bio: "Senior administrator focused on user management and system operations",
-      isActive: true
+      isActive: true,
     });
 
     const vibhav = await User.create({
       name: "Vibhav Chavan",
       email: "vibhav@admin.com",
-      password: hashedPassword,
+      password: "123456",
       role: "admin",
       phone: "+91 98765 43212",
       bio: "Technical administrator specializing in platform maintenance",
-      isActive: true
+      isActive: true,
     });
 
     // Create Employer Users
     const techcorp = await User.create({
       name: "TechCorp",
       email: "techcorp@employer.com",
-      password: hashedPassword,
+      password: "123456",
       role: "employer",
       phone: "+91 98765 11111",
       companyName: "TechCorp",
       companyWebsite: "https://techcorp.com",
       bio: "Leading technology company providing innovative solutions",
-      isActive: true
+      isActive: true,
     });
 
     const innovateInc = await User.create({
       name: "Innovate Inc",
       email: "innovateinc@employer.com",
-      password: hashedPassword,
+      password: "123456",
       role: "employer",
       phone: "+91 98765 11112",
       companyName: "Innovate Inc",
       companyWebsite: "https://innovateinc.com",
       bio: "Innovation-driven company focused on cutting-edge technology",
-      isActive: true
+      isActive: true,
     });
 
     const futureWorks = await User.create({
       name: "FutureWorks",
       email: "futureworks@employer.com",
-      password: hashedPassword,
+      password: "123456",
       role: "employer",
       phone: "+91 98765 11113",
       companyName: "FutureWorks",
       companyWebsite: "https://futureworks.com",
       bio: "Building the future of work through technology",
-      isActive: true
+      isActive: true,
     });
 
     const digitalDreams = await User.create({
       name: "Digital Dreams",
       email: "digitaldreams@employer.com",
-      password: hashedPassword,
+      password: "123456",
       role: "employer",
       phone: "+91 98765 11114",
       companyName: "Digital Dreams",
       companyWebsite: "https://digitaldreams.com",
       bio: "Creating digital experiences that inspire and engage",
-      isActive: true
+      isActive: true,
     });
 
     // Create Candidate Users
     const candidate1 = await User.create({
       name: "Candidate1",
       email: "c1@candidate.com",
-      password: hashedPassword,
+      password: "123456",
       role: "seeker",
       phone: "+91 98765 44444",
       bio: "Passionate software developer seeking new opportunities",
       skills: "JavaScript, React, Node.js, Python, SQL",
       education: "B.Tech in Computer Science, ABC University, 2022",
       experience: "1 year as Junior Developer at XYZ Tech",
-      isActive: true
+      isActive: true,
     });
 
     const candidate2 = await User.create({
       name: "Candidate2",
       email: "c2@candidate.com",
-      password: hashedPassword,
+      password: "123456",
       role: "seeker",
       phone: "+91 98765 44445",
       bio: "Frontend developer with eye for design",
       skills: "HTML, CSS, JavaScript, React, Vue.js, Tailwind CSS",
       education: "B.Tech in Information Technology, DEF College, 2021",
       experience: "2 years as Frontend Developer at WebSolutions Inc",
-      isActive: true
+      isActive: true,
     });
 
     const candidate3 = await User.create({
       name: "Candidate3",
       email: "c3@candidate.com",
-      password: hashedPassword,
+      password: "123456",
       role: "seeker",
       phone: "+91 98765 44446",
       bio: "Backend developer specializing in API development",
       skills: "Java, Spring Boot, MySQL, MongoDB, REST APIs",
       education: "MCA, GHI Institute, 2023",
       experience: "Fresher with strong internship experience",
-      isActive: true
+      isActive: true,
     });
 
     const candidate4 = await User.create({
       name: "Candidate4",
       email: "c4@candidate.com",
-      password: hashedPassword,
+      password: "123456",
       role: "seeker",
       phone: "+91 98765 44447",
       bio: "Full stack developer with cloud expertise",
       skills: "JavaScript, Python, AWS, Docker, Kubernetes, CI/CD",
       education: "B.Tech in Computer Engineering, JKL University, 2020",
       experience: "3 years as Full Stack Developer at CloudTech Solutions",
-      isActive: true
+      isActive: true,
     });
 
     const candidate5 = await User.create({
       name: "Candidate5",
       email: "c5@candidate.com",
-      password: hashedPassword,
+      password: "123456",
       role: "seeker",
       phone: "+91 98765 44448",
       bio: "Data analyst passionate about insights and analytics",
       skills: "Python, Pandas, SQL, Tableau, Power BI, Excel",
       education: "M.Sc. in Data Science, MNO College, 2022",
       experience: "1.5 years as Data Analyst at Analytics Corp",
-      isActive: true
+      isActive: true,
     });
 
     console.log("✅ Users created");
