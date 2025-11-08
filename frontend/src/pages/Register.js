@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authAPI } from '../api';
+import { useAuth } from '../contexts/AuthContext';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,8 +63,14 @@ function Register() {
     setLoading(true);
 
     try {
-      await authAPI.register(formData);
-      navigate('/login');
+      const response = await authAPI.register(formData);
+      const { token, user } = response.data;
+      
+      // Auto-login after registration
+      login(user, token);
+      
+      // Redirect to home page
+      navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {
@@ -314,7 +322,7 @@ function Register() {
 
               {formData.role === 'employer' && (
                 <div className="mb-3">
-                  <label className="form-label fw-bold">Company Name</label>
+                  <label className="form-label fw-bold">Company Name *</label>
                   <input
                     type="text"
                     name="companyName"
@@ -322,6 +330,7 @@ function Register() {
                     value={formData.companyName}
                     onChange={handleChange}
                     required
+                    placeholder="Enter your company name"
                   />
                 </div>
               )}

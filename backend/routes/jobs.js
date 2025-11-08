@@ -2,11 +2,12 @@ const express = require('express');
 const Job = require('../models/Job');
 const User = require('../models/User');
 const { Op } = require('sequelize');
+const { authenticateToken, isEmployer, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all jobs with filters and search
-router.get('/', async (req, res) => {
+// Get all jobs with filters and search (public - optional auth for personalization)
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const { 
       search, 
@@ -86,8 +87,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get job by ID
-router.get('/:id', async (req, res) => {
+// Get job by ID (public - optional auth)
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const job = await Job.findByPk(req.params.id, {
       include: [{
@@ -111,8 +112,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create job
-router.post('/', async (req, res) => {
+// Create job (employer only)
+router.post('/', authenticateToken, isEmployer, async (req, res) => {
   try {
     const {
       title,
@@ -129,16 +130,20 @@ router.post('/', async (req, res) => {
       industry,
       experienceLevel,
       deadline,
-      isFeatured,
-      createdBy
+      isFeatured
     } = req.body;
+
+    // Validation
+    if (!title || !description || !location || !jobType) {
+      return res.status(400).json({ error: 'Title, description, location, and job type are required' });
+    }
 
     const job = await Job.create({
       title,
       description,
       requirements,
       responsibilities,
-      company,
+      company: company || req.user.companyName,
       companyLogo,
       location,
       salary,
@@ -149,7 +154,7 @@ router.post('/', async (req, res) => {
       experienceLevel,
       deadline,
       isFeatured: isFeatured || false,
-      createdBy
+      createdBy: req.user.id
     });
 
     res.status(201).json({
@@ -162,13 +167,18 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update job
-router.put('/:id', async (req, res) => {
+// Update job (employer only - must be job owner)
+router.put('/:id', authenticateToken, isEmployer, async (req, res) => {
   try {
     const job = await Job.findByPk(req.params.id);
     
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Check if user is the job owner
+    if (job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied. You can only update your own job posts.' });
     }
 
     await job.update(req.body);
@@ -183,13 +193,18 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete job
-router.delete('/:id', async (req, res) => {
+// Delete job (employer only - must be job owner)
+router.delete('/:id', authenticateToken, isEmployer, async (req, res) => {
   try {
     const job = await Job.findByPk(req.params.id);
     
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Check if user is the job owner
+    if (job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied. You can only delete your own job posts.' });
     }
 
     await job.destroy();
@@ -201,13 +216,18 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Toggle job active status
-router.patch('/:id/toggle-active', async (req, res) => {
+// Toggle job active status (employer only - must be job owner)
+router.patch('/:id/toggle-active', authenticateToken, isEmployer, async (req, res) => {
   try {
     const job = await Job.findByPk(req.params.id);
     
     if (!job) {
       return res.status(404).json({ error: 'Job not found' });
+    }
+
+    // Check if user is the job owner
+    if (job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied. You can only toggle your own job posts.' });
     }
 
     await job.update({ isActive: !job.isActive });
@@ -222,11 +242,29 @@ router.patch('/:id/toggle-active', async (req, res) => {
   }
 });
 
-// Get jobs by employer
+// Get jobs by employer (requires authentication - employer sees own jobs)
+router.get('/employer/my-jobs', authenticateToken, isEmployer, async (req, res) => {
+  try {
+    const jobs = await Job.findAll({
+      where: { createdBy: req.user.id },
+      order: [['postedAt', 'DESC']]
+    });
+
+    res.json(jobs);
+  } catch (error) {
+    console.error('Get employer jobs error:', error);
+    res.status(500).json({ error: 'Failed to fetch employer jobs' });
+  }
+});
+
+// Get jobs by specific employer ID (public)
 router.get('/employer/:employerId', async (req, res) => {
   try {
     const jobs = await Job.findAll({
-      where: { createdBy: req.params.employerId },
+      where: { 
+        createdBy: req.params.employerId,
+        isActive: true
+      },
       order: [['postedAt', 'DESC']]
     });
 

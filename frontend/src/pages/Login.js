@@ -32,7 +32,10 @@ function Login() {
 
     try {
       const response = await authAPI.login(formData);
-      login(response.data.user);
+      const { token, user } = response.data;
+      
+      // Save token and user data
+      login(user, token);
 
       // Redirect to Home page for all users
       navigate("/");

@@ -2,15 +2,15 @@ const express = require('express');
 const Application = require('../models/Application');
 const Job = require('../models/Job');
 const User = require('../models/User');
+const { authenticateToken, isSeeker, isEmployer, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Submit application
-router.post('/', async (req, res) => {
+// Submit application (seekers only)
+router.post('/', authenticateToken, isSeeker, async (req, res) => {
   try {
     const {
       jobId,
-      applicantId,
       fullName,
       email,
       phone,
@@ -21,9 +21,24 @@ router.post('/', async (req, res) => {
       coverLetter
     } = req.body;
 
+    // Validation
+    if (!jobId || !fullName || !email || !phone) {
+      return res.status(400).json({ error: 'Job ID, full name, email, and phone are required' });
+    }
+
+    // Check if job exists
+    const job = await Job.findByPk(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    if (!job.isActive) {
+      return res.status(400).json({ error: 'This job is no longer accepting applications' });
+    }
+
     // Check if already applied
     const existingApplication = await Application.findOne({
-      where: { jobId, applicantId }
+      where: { jobId, applicantId: req.user.id }
     });
 
     if (existingApplication) {
@@ -32,7 +47,7 @@ router.post('/', async (req, res) => {
 
     const application = await Application.create({
       jobId,
-      applicantId,
+      applicantId: req.user.id,
       fullName,
       email,
       phone,
@@ -54,11 +69,21 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get applications for a job (for employers)
-router.get('/job/:jobId', async (req, res) => {
+// Get applications for a job (employers only - must be job owner)
+router.get('/job/:jobId', authenticateToken, isEmployer, async (req, res) => {
   try {
     const { status } = req.query;
     
+    // Check if employer owns the job
+    const job = await Job.findByPk(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    if (job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied. You can only view applications for your own jobs.' });
+    }
+
     const where = { jobId: req.params.jobId };
     if (status) {
       where.status = status;
@@ -88,11 +113,40 @@ router.get('/job/:jobId', async (req, res) => {
   }
 });
 
-// Get applications by user (for applicants)
-router.get('/user/:userId', async (req, res) => {
+// Get my applications (seekers only)
+router.get('/my-applications', authenticateToken, isSeeker, async (req, res) => {
   try {
     const applications = await Application.findAll({
-      where: { applicantId: req.params.userId },
+      where: { applicantId: req.user.id },
+      include: [
+        {
+          model: Job,
+          as: 'job',
+          attributes: ['id', 'title', 'company', 'location', 'jobType', 'salary']
+        }
+      ],
+      order: [['appliedAt', 'DESC']]
+    });
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Get user applications error:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
+// Get applications by user ID (for backwards compatibility)
+router.get('/user/:userId', authenticateToken, async (req, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+
+    // Users can only view their own applications unless they're admin
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. You can only view your own applications.' });
+    }
+
+    const applications = await Application.findAll({
+      where: { applicantId: userId },
       include: [
         {
           model: Job,
@@ -111,7 +165,7 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 // Get single application
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const application = await Application.findByPk(req.params.id, {
       include: [
@@ -123,13 +177,26 @@ router.get('/:id', async (req, res) => {
         {
           model: Job,
           as: 'job',
-          attributes: ['id', 'title', 'company', 'location']
+          include: [{
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'name', 'companyName']
+          }]
         }
       ]
     });
 
     if (!application) {
       return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if user has access to this application
+    const isApplicant = application.applicantId === req.user.id;
+    const isJobOwner = application.job.createdBy === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isApplicant && !isJobOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Access denied.' });
     }
 
     res.json(application);
@@ -139,15 +206,31 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Update application status
-router.patch('/:id/status', async (req, res) => {
+// Update application status (employers only - must be job owner)
+router.patch('/:id/status', authenticateToken, isEmployer, async (req, res) => {
   try {
     const { status } = req.body;
     
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findByPk(req.params.id, {
+      include: [{
+        model: Job,
+        as: 'job'
+      }]
+    });
     
     if (!application) {
       return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if employer owns the job
+    if (application.job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied. You can only update applications for your own jobs.' });
+    }
+
+    // Validate status
+    const validStatuses = ['Pending', 'Under Review', 'Shortlisted', 'Interview Scheduled', 'Rejected', 'Accepted'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
     }
 
     await application.update({ status });
@@ -162,13 +245,58 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
-// Delete application
-router.delete('/:id', async (req, res) => {
+// Update full application (employers only)
+router.put('/:id', authenticateToken, isEmployer, async (req, res) => {
   try {
-    const application = await Application.findByPk(req.params.id);
+    const application = await Application.findByPk(req.params.id, {
+      include: [{
+        model: Job,
+        as: 'job'
+      }]
+    });
     
     if (!application) {
       return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if employer owns the job
+    if (application.job.createdBy !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied.' });
+    }
+
+    await application.update(req.body);
+
+    res.json({
+      message: 'Application updated successfully',
+      application
+    });
+  } catch (error) {
+    console.error('Update application error:', error);
+    res.status(500).json({ error: 'Failed to update application' });
+  }
+});
+
+// Delete application
+router.delete('/:id', authenticateToken, async (req, res) => {
+  try {
+    const application = await Application.findByPk(req.params.id, {
+      include: [{
+        model: Job,
+        as: 'job'
+      }]
+    });
+    
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Only applicant, job owner, or admin can delete
+    const isApplicant = application.applicantId === req.user.id;
+    const isJobOwner = application.job.createdBy === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isApplicant && !isJobOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Access denied.' });
     }
 
     await application.destroy();
@@ -181,10 +309,10 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get application statistics for employer
-router.get('/stats/employer/:employerId', async (req, res) => {
+router.get('/stats/employer', authenticateToken, isEmployer, async (req, res) => {
   try {
     const jobs = await Job.findAll({
-      where: { createdBy: req.params.employerId },
+      where: { createdBy: req.user.id },
       attributes: ['id']
     });
 
@@ -210,12 +338,22 @@ router.get('/stats/employer/:employerId', async (req, res) => {
       where: { jobId: jobIds, status: 'Interview Scheduled' }
     });
 
+    const rejected = await Application.count({
+      where: { jobId: jobIds, status: 'Rejected' }
+    });
+
+    const accepted = await Application.count({
+      where: { jobId: jobIds, status: 'Accepted' }
+    });
+
     res.json({
       totalApplications,
       pending,
       underReview,
       shortlisted,
-      interviewed
+      interviewed,
+      rejected,
+      accepted
     });
   } catch (error) {
     console.error('Get application stats error:', error);
