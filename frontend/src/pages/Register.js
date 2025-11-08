@@ -9,7 +9,7 @@ function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'seeker',
+    role: 'candidate',
     phone: '',
     companyName: ''
   });
@@ -107,12 +107,12 @@ function Register() {
                       className="form-check-input"
                       type="radio"
                       name="role"
-                      id="seeker"
-                      value="seeker"
-                      checked={formData.role === 'seeker'}
+                      id="candidate"
+                      value="candidate"
+                      checked={formData.role === 'candidate'}
                       onChange={handleChange}
                     />
-                    <label className="form-check-label" htmlFor="seeker">
+                    <label className="form-check-label" htmlFor="candidate">
                       Candidate
                     </label>
                   </div>

@@ -1,5 +1,5 @@
 {
-  "name": "ojp-backend",
+  "name": "online_job_application_portal-backend",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {

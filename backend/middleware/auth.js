@@ -68,9 +68,9 @@ const isEmployer = (req, res, next) => {
   next();
 };
 
-// Middleware to check if user is job seeker/candidate
-const isSeeker = (req, res, next) => {
-  if (req.user.role !== 'seeker') {
+// Middleware to check if user is candidate
+const isCandidate = (req, res, next) => {
+  if (req.user.role !== 'candidate') {
     return res.status(403).json({ error: 'Access denied. Candidate role required.' });
   }
   next();
@@ -111,7 +111,7 @@ module.exports = {
   authenticateToken,
   authorizeRole,
   isEmployer,
-  isSeeker,
+  isCandidate,
   isAdmin,
   optionalAuth
 };

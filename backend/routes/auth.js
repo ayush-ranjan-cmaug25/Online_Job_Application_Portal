@@ -68,7 +68,7 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'seeker',
+      role: role || 'candidate',
       phone,
       companyName: role === 'employer' ? companyName : null
     });

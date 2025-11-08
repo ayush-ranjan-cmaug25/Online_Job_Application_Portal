@@ -2,12 +2,12 @@ const express = require('express');
 const Application = require('../models/Application');
 const Job = require('../models/Job');
 const User = require('../models/User');
-const { authenticateToken, isSeeker, isEmployer, authorizeRole } = require('../middleware/auth');
+const { authenticateToken, isCandidate, isEmployer, authorizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Submit application (seekers only)
-router.post('/', authenticateToken, isSeeker, async (req, res) => {
+// Submit application (candidates only)
+router.post('/', authenticateToken, isCandidate, async (req, res) => {
   try {
     const {
       jobId,
@@ -113,8 +113,8 @@ router.get('/job/:jobId', authenticateToken, isEmployer, async (req, res) => {
   }
 });
 
-// Get my applications (seekers only)
-router.get('/my-applications', authenticateToken, isSeeker, async (req, res) => {
+// Get my applications (candidates only)
+router.get('/my-applications', authenticateToken, isCandidate, async (req, res) => {
   try {
     const applications = await Application.findAll({
       where: { applicantId: req.user.id },

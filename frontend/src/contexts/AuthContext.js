@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     isAuthenticated: !!user,
     isEmployer: user?.role === 'employer',
-    isSeeker: user?.role === 'seeker',
+    isCandidate: user?.role === 'candidate',
     isAdmin: user?.role === 'admin',
     loading
   };

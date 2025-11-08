@@ -2,12 +2,12 @@ const express = require('express');
 const SavedJob = require('../models/SavedJob');
 const Job = require('../models/Job');
 const User = require('../models/User');
-const { authenticateToken, isSeeker } = require('../middleware/auth');
+const { authenticateToken, isCandidate } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Save a job (seekers only)
-router.post('/', authenticateToken, isSeeker, async (req, res) => {
+// Save a job (candidates only)
+router.post('/', authenticateToken, isCandidate, async (req, res) => {
   try {
     const { jobId } = req.body;
 
@@ -46,7 +46,7 @@ router.post('/', authenticateToken, isSeeker, async (req, res) => {
 });
 
 // Get my saved jobs
-router.get('/my-saved-jobs', authenticateToken, isSeeker, async (req, res) => {
+router.get('/my-saved-jobs', authenticateToken, isCandidate, async (req, res) => {
   try {
     const savedJobs = await SavedJob.findAll({
       where: { userId: req.user.id },
@@ -105,7 +105,7 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
 });
 
 // Remove saved job
-router.delete('/:id', authenticateToken, isSeeker, async (req, res) => {
+router.delete('/:id', authenticateToken, isCandidate, async (req, res) => {
   try {
     const savedJob = await SavedJob.findByPk(req.params.id);
     
@@ -128,7 +128,7 @@ router.delete('/:id', authenticateToken, isSeeker, async (req, res) => {
 });
 
 // Remove saved job by job ID (alternative endpoint)
-router.delete('/job/:jobId', authenticateToken, isSeeker, async (req, res) => {
+router.delete('/job/:jobId', authenticateToken, isCandidate, async (req, res) => {
   try {
     const savedJob = await SavedJob.findOne({
       where: {
@@ -151,7 +151,7 @@ router.delete('/job/:jobId', authenticateToken, isSeeker, async (req, res) => {
 });
 
 // Check if job is saved
-router.get('/check/:jobId', authenticateToken, isSeeker, async (req, res) => {
+router.get('/check/:jobId', authenticateToken, isCandidate, async (req, res) => {
   try {
     const savedJob = await SavedJob.findOne({
       where: { 
