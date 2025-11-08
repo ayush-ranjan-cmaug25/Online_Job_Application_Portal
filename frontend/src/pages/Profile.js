@@ -119,7 +119,7 @@ function Profile() {
                 </div>
               </div>
 
-              {user.role === 'seeker' && (
+              {user.role === 'candidate' && (
                 <>
                   <hr className="my-4" style={{opacity: 0.2}} />
                   <h5 className="fw-bold mb-3">Professional Details</h5>

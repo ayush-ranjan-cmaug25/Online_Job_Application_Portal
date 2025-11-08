@@ -4,7 +4,7 @@ import { applicationAPI, savedJobAPI } from '../api';
 import { useAuth } from '../contexts/AuthContext';
 
 function ApplicantDashboard() {
-  const { user, isSeeker } = useAuth();
+  const { user, isCandidate } = useAuth();
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [savedJobs, setSavedJobs] = useState([]);
@@ -12,12 +12,12 @@ function ApplicantDashboard() {
   const [activeTab, setActiveTab] = useState('applications');
 
   useEffect(() => {
-    if (!user || !isSeeker) {
+    if (!user || !isCandidate) {
       navigate('/login');
       return;
     }
     fetchData();
-  }, [user, isSeeker]);
+  }, [user, isCandidate, navigate]);
 
   const fetchData = async () => {
     try {

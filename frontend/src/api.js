@@ -47,7 +47,9 @@ export const authAPI = {
   refreshToken: () => api.post('/auth/refresh-token'),
   getProfile: (id) => api.get(`/auth/profile/${id}`),
   updateProfile: (id, data) => api.put(`/auth/profile/${id}`, data),
-  changePassword: (data) => api.put('/auth/change-password', data)
+  changePassword: (data) => api.put('/auth/change-password', data),
+  getAllUsers: () => api.get('/auth/users'),
+  getUserStats: () => api.get('/auth/users/stats')
 };
 
 // Job APIs
@@ -64,6 +66,7 @@ export const jobAPI = {
 
 // Application APIs
 export const applicationAPI = {
+  getAll: () => api.get('/applications'), // Admin only
   submit: (data) => api.post('/applications', data),
   getMyApplications: () => api.get('/applications/my-applications'),
   getByJob: (jobId, status) => api.get(`/applications/job/${jobId}`, { params: { status } }),

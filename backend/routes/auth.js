@@ -260,4 +260,54 @@ router.post('/logout', authenticateToken, async (req, res) => {
   }
 });
 
+// Get all users (admin only)
+router.get('/users', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin only.' });
+    }
+
+    const users = await User.findAll({
+      attributes: { exclude: ['password'] },
+      order: [['createdAt', 'DESC']]
+    });
+
+    res.json({
+      users: users.map(user => getUserData(user)),
+      total: users.length
+    });
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Get user statistics (admin only)
+router.get('/users/stats', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin only.' });
+    }
+
+    const totalUsers = await User.count();
+    const candidateCount = await User.count({ where: { role: 'candidate' } });
+    const employerCount = await User.count({ where: { role: 'employer' } });
+    const adminCount = await User.count({ where: { role: 'admin' } });
+    const activeUsers = await User.count({ where: { isActive: true } });
+
+    res.json({
+      total: totalUsers,
+      candidates: candidateCount,
+      employers: employerCount,
+      admins: adminCount,
+      active: activeUsers
+    });
+  } catch (error) {
+    console.error('Get user stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch user statistics' });
+  }
+});
+
 module.exports = router;

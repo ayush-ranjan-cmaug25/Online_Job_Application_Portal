@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { jobAPI, applicationAPI } from '../api';
-import axios from 'axios';
+import { jobAPI, applicationAPI, authAPI } from '../api';
 
 function AdminDashboard() {
   const { user, isAdmin } = useAuth();
@@ -33,22 +32,32 @@ function AdminDashboard() {
       // Fetch all jobs
       const jobsResponse = await jobAPI.getAll({ limit: 1000 });
       const allJobs = jobsResponse.data.jobs || [];
+      console.log('Fetched jobs:', allJobs.length);
       setJobs(allJobs);
 
-      // Fetch all applications
-      const applicationsResponse = await axios.get('http://localhost:5000/api/applications');
+      // Fetch all applications (admin endpoint)
+      const applicationsResponse = await applicationAPI.getAll();
       const allApplications = applicationsResponse.data || [];
+      console.log('Fetched applications:', allApplications.length);
       setApplications(allApplications);
 
+      // Fetch user statistics
+      const userStatsResponse = await authAPI.getUserStats();
+      const userStats = userStatsResponse.data;
+      console.log('Fetched user stats:', userStats);
+
       // Calculate statistics
-      setStats({
+      const calculatedStats = {
         totalJobs: allJobs.length,
         totalApplications: allApplications.length,
-        totalUsers: 0, // This would need a users endpoint
-        activeJobs: allJobs.filter(job => job.status === 'active').length
-      });
+        totalUsers: userStats.total || 0,
+        activeJobs: allJobs.filter(job => job.isActive).length
+      };
+      console.log('Calculated stats:', calculatedStats);
+      setStats(calculatedStats);
     } catch (error) {
       console.error('Error fetching admin data:', error);
+      console.error('Error details:', error.response?.data);
     } finally {
       setLoading(false);
     }

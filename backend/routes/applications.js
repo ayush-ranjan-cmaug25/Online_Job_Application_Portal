@@ -6,6 +6,37 @@ const { authenticateToken, isCandidate, isEmployer, authorizeRole } = require('.
 
 const router = express.Router();
 
+// Get all applications (admin only)
+router.get('/', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admin only.' });
+    }
+
+    const applications = await Application.findAll({
+      include: [
+        {
+          model: User,
+          as: 'applicant',
+          attributes: ['id', 'name', 'email', 'phone', 'avatar']
+        },
+        {
+          model: Job,
+          as: 'job',
+          attributes: ['id', 'title', 'company', 'location', 'jobType', 'salary']
+        }
+      ],
+      order: [['appliedAt', 'DESC']]
+    });
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Get all applications error:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
 // Submit application (candidates only)
 router.post('/', authenticateToken, isCandidate, async (req, res) => {
   try {
